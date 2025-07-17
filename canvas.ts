@@ -37,7 +37,6 @@ export default function execute(
 	text: string,
 	resetCanvas: boolean = true
 ) {
-	console.log('File Contents:', text);
 	const ctx: CanvasRenderingContext2D = canvas.getContext('2d') as any;
 	if(ctx) {
 	let fillStyle = 'black';
@@ -68,7 +67,6 @@ export default function execute(
 		lines.unshift('clear'); // Ensure the canvas is cleared before processing
 	}
 	function speedApplyStyles() {
-		console.log('\tApplying styles');
 		applyStyles(
 			ctx,
 			fillStyle,
@@ -83,7 +81,6 @@ export default function execute(
 	}
 	for (let i = 0; i < lines.length; i++) {
 		const content = lines[i].split('//')[0].trim(); // Get content, trim, and remove comments
-		console.log(`Processing line ${i}:`, content);
 		// Skip lines, returns, etc.
 		if (!content) continue; // Skip empty lines
 		if (content.startsWith('skip to line ')) {
@@ -93,7 +90,6 @@ export default function execute(
 
 		// Groups and Paths
 		if (content.startsWith('group {')) {
-			console.log('\tIn group block');
 			inGroup = true; // Start of a group block
 			ctx.save(); // Save the current state
 			ctx.beginPath(); // Start a new path
@@ -101,7 +97,6 @@ export default function execute(
 		}
 		if (content.startsWith('path {')) inPath = true; // Start of a path block
 		if (inPath) {
-			console.log('\tIn path block');
 			if (content == '}') {
 				inPath = false; // End of a path block
 			}
@@ -113,7 +108,6 @@ export default function execute(
 				.replace('curve', '')
 				.trim()
 				.split(' ');
-			console.log(parts);
 			if (content.startsWith('skip') && parts.length === 2) {
 				ctx.moveTo(...(parts.map((a) => parseFloat(a)) as [number, number]));
 			} else if (parts.length === 2) {
@@ -303,5 +297,4 @@ export default function execute(
 		*/
 	}
 }
-	console.log('Canvas dimensions:', canvas.width, canvas.height);
 }
