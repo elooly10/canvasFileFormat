@@ -1,0 +1,15 @@
+group {
+    stroke style blue
+    path {
+        skip 20 20
+        200 20
+    }
+    stroke
+}
+
+stroke style green
+path {
+    skip 20 20
+    120 120
+}
+stroke

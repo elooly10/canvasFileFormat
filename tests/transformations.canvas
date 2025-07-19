@@ -1,0 +1,41 @@
+// Set up canvas
+width 300
+height 200
+reset
+
+// Draw a filled square at the origin
+use degrees
+fill style steelblue
+stroke style black
+stroke width 2
+
+begin path
+rect 20 20 60 60
+fill
+stroke
+close path
+
+// Save the state, translate & rotate, then draw a stroked square
+save
+
+// Move origin to (150, 100), then rotate 45°
+transform 1 0 0 1 150 100
+rotate 45
+
+begin path
+rect -30 -30 60 60    // draw a square centered on the new origin
+stroke
+fill
+close path
+
+restore
+
+// Draw axes for reference
+stroke style crimson
+stroke width 1
+begin path
+move to 0 100
+line to 300 100       // horizontal axis
+move to 150 0
+line to 150 200       // vertical axis
+stroke

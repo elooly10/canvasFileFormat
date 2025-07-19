@@ -1,0 +1,19 @@
+width 1000
+height 1000
+
+stroke style lime
+stroke width 10
+line join round
+
+path {
+    240 80
+    300 40
+    350 70
+    skip 800 800
+    540 80
+    bezier 100 200 300 400 500 600
+    quadratic 400 300 200 100
+    arc 600 800 500 550 200
+}
+
+stroke

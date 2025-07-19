@@ -1,0 +1,45 @@
+// Set canvas dimensions
+width 400
+height 300
+
+// Set fill and stroke styles
+fill style red
+stroke style blue
+
+// Set stroke width and line cap/join
+stroke width 8
+line cap round
+line join bevel
+
+// Draw a stroked rectangle
+stroke rect 20 20 100 60
+
+
+// Use rect, then fill and stroke
+rect 50 120 120 80
+fill
+stroke
+
+// Clear a specific rectangle
+clear rect 60 130 40 40
+
+// Set miter limit
+miter limit 5
+
+// Set dash pattern and offset
+dash 10 5 2
+dash offset 3
+
+// Draw a rectangle to test
+rect 200 30 80 120
+
+// 
+fill style hsl(60deg, 100%, 50%)
+stroke style #000
+
+stroke
+fill
+
+
+// End test
+return
