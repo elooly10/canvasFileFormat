@@ -1,10 +1,10 @@
 import fs from "fs/promises"
 import path from "path";
 import { createCanvas } from "canvas";
-import toCanvas from "./canvas.ts";
-import fromSVG from "./fromSVG.ts";
+import toCanvas from "./toCanvas.js";
+import fromSVG from "./fromSVG.js";
 
-async function processDirectory(inputDir, outputDir) {
+async function processDirectory(inputDir: string, outputDir: string) {
 
   // Ensure output directory exists
   await fs.mkdir(outputDir, { recursive: true });

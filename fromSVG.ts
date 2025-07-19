@@ -1,205 +1,169 @@
-import { JSDOM } from "jsdom"
-
+import { JSDOM } from "jsdom";
+import * as utils from "./SVGutils.js"
 type Line = string;
+type Styles = {
+  fill: string | null;
+  stroke: string | null;
+  lineWidth: number;
+};
 
-function convertPath(d: string): Line[] {
-	const commands = d.match(/[a-df-z][^a-df-z]*/gi) || [];
-	const lines: Line[] = [];
-	let currX = 0,
-		currY = 0;
 
-	for (let cmd of commands) {
-		const type = cmd[0];
-		const coords = cmd
-			.slice(1)
-			.trim()
-			.split(/[\s,]+/)
-			.filter((tok) => /^[0-9.+-eE]+$/.test(tok))
-			.map(parseFloat);
-
-		switch (type) {
-      case "M":
-        currX = coords[0];
-        currY = coords[1];
-        lines.push(`\tskip ${currX} ${currY}`);
-        break;
-
-      case "m":
-        currX += coords[0];
-        currY += coords[1];
-        lines.push(`\tskip ${currX} ${currY}`);
-        break;
-
-      case "L":
-        currX = coords[0];
-        currY = coords[1];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "l":
-        currX += coords[0];
-        currY += coords[1];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "H":
-        currX = coords[0];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "V":
-        currY = coords[0];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "h":
-        currX += coords[0];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "v":
-        currY += coords[0];
-        lines.push(`\t${currX} ${currY}`);
-        break;
-
-      case "C":
-        lines.push(`\tbezier ${coords.join(" ")}`);
-        currX = coords[4];
-        currY = coords[5];
-        break;
-
-      case "c":
-        lines.push(
-          `\tbezier ${[
-            coords[0] + currX,
-            coords[1] + currY,
-            coords[2] + currX,
-            coords[3] + currY,
-            coords[4] + currX,
-            coords[5] + currY,
-          ].join(" ")}`
-        );
-        currX += coords[4];
-        currY += coords[5];
-        break;
-
-      case "Q":
-        lines.push(`\tquadratic ${coords.join(" ")}`);
-        currX = coords[2];
-        currY = coords[3];
-        break;
-
-      case "q":
-        lines.push(
-          `\tquadratic ${[
-            coords[0] + currX,
-            coords[1] + currY,
-            coords[2] + currX,
-            coords[3] + currY,
-          ].join(" ")}`
-        );
-        currX += coords[2];
-        currY += coords[3];
-        break;
-      case "Z":
-      case "z":
-        lines.push("}");
-        return lines;
-
-      default:
-        console.warn(`Unhandled path command: ${type}`);
-    }
-	}
-    lines.push('}')
-	return lines;
+function resetStyles(): Styles {
+  return {
+    fill: "none",
+    stroke: "none",
+    lineWidth: 1,
+  };
 }
-
-function emitStyles(el: Element): {style: Line[], fill: boolean, stroke: boolean} {
-	const out: Line[] = [];
-	const fill = el.getAttribute('fill');
-	const stroke = el.getAttribute('stroke');
-	const sw = el.getAttribute('stroke-width');
-
-	if (fill && fill !== 'none') {
-		out.push(`fill style ${fill}`);
-	} else {
-		// if you want to explicitly clear fill, you could do:
-		// out.push(`fill style transparent`)
-	}
-
-	if (stroke && stroke !== 'none') {
-		out.push(`stroke style ${stroke}`);
-		if (sw) {
-			out.push(`stroke width ${parseFloat(sw)}`);
-		}
-	}
-
-	return {
-		style: out,
-		fill: !!(fill && fill !== 'none'),
-		stroke: !!(stroke && stroke !== 'none')
-	};
+let lastStyles: Styles = resetStyles(); // The styles of the last element in the list
+let groupStyles: Styles = resetStyles(); // The default styles, applied by the parent
+let ignoreStyles = true; // Ignore the styles currently present and do not add fill / stroke calls.
+let inGroup = false;
+function getStyles(el: Element): Styles {
+  const fill = el.getAttribute("fill")?.length
+    ? el.getAttribute("fill")
+    : groupStyles.fill;
+  const stroke = el.getAttribute("stroke")?.length
+    ? el.getAttribute("stroke")
+    : groupStyles.stroke;
+  const lineWidth = el.getAttribute("stroke-width")
+    ? parseFloat(el.getAttribute("stroke-width") ?? "0")
+    : groupStyles.lineWidth;
+  return { fill, stroke, lineWidth };
 }
-
+function emitStyles(el: Element) {
+  const out: Line[] = [];
+  const outInit: Line[] = applyStyles();
+  const { fill, stroke, lineWidth } = getStyles(el);
+  if (fill != lastStyles.fill) {
+    if (fill != "none") out.push(`fill style ${fill}`);
+    lastStyles.fill = fill;
+  }
+  if (stroke != lastStyles.stroke) {
+    if (stroke != "none") out.push(`stroke style ${stroke}`);
+    lastStyles.stroke = stroke;
+  }
+  if (lineWidth != lastStyles.lineWidth && stroke != "none") {
+    if (lineWidth != 0) out.push(`stroke width ${lineWidth}`);
+    lastStyles.lineWidth = lineWidth;
+  }
+  if (el.tagName.toLowerCase() != "g") {
+    outInit.push(``, `begin path`);
+    out.unshift(...outInit);
+  }
+  return out;
+}
+function applyStyles() {
+  const out: Line[] = [];
+  if (!ignoreStyles) {
+    if (lastStyles.fill != "none") out.push(`fill`);
+    if (lastStyles.stroke != "none" && lastStyles.lineWidth != 0)
+      out.push(`stroke`);
+  }
+  return out;
+}
 function convertElement(el: Element): Line[] {
-	const tag = el.tagName.toLowerCase();
-	const out: Line[] = [];
+  const tag = el.tagName.toLowerCase();
+  const out: Line[] = [];
+  let groupNested = inGroup; // If we find ourselves in a group, are we already in one?
 
-	// 1) Pull out styles right before the shape
-	out.push('') // Extra spacing
-    out.push('begin path');
-	let pathStyles = emitStyles(el)
-    out.push(...pathStyles.style)
-	// 2) Begin a path if needed
-	let needsPath = false;
-	switch (tag) {
+  // 1) Handle transformations
+  const transform = el.getAttribute("transform");
+  if (transform) {
+    const commands = utils.parseTransform(transform);
+    for (let c of commands) {
+      switch (c.type) {
+        case "translate":
+          // E/F translation
+          out.push(`transform 1 0 0 1 ${c.values[0]} ${c.values[1] || 0}`);
+          break;
+        case "rotate":
+          // rotate(angle, cx?, cy?)
+          if (c.values[1] != null && c.values[2] != null) {
+            // translate(cx,cy) then rotate(angle) then translate(-cx,-cy)
+            out.push(`transform 1 0 0 1 ${c.values[1]} ${c.values[2]}`);
+            out.push(`rotate ${c.values[0]}`);
+            out.push(`transform 1 0 0 1 ${-c.values[1]} ${-c.values[2]}`);
+          } else {
+            out.push(`rotate ${c.values[0]}`);
+          }
+          break;
+        case "scale":
+          const sx = c.values[0];
+          const sy = c.values[1] ?? sx;
+          out.push(`scale ${sx} ${sy}`);
+          break;
+        case "skewX":
+          // matrix(1, 0, tan(angle), 1, 0, 0)
+          const kx = Math.tan((c.values[0] * Math.PI) / 180);
+          out.push(`transform 1 0 ${kx} 1 0 0`);
+          break;
+        case "skewY":
+          const ky = Math.tan((c.values[0] * Math.PI) / 180);
+          out.push(`transform 1 ${ky} 0 1 0 0`);
+          break;
+        case "matrix":
+          // direct
+          out.push(`transform ${c.values.join(" ")}`);
+          break;
+      }
+    }
+  }
+
+  // 2) Style
+  if (el.tagName.toLowerCase() == "g") {
+    // Don't style groups like normal
+    out.push(...applyStyles());
+    out.push("group {");
+    inGroup = true;
+    ignoreStyles = true;
+    out.push(...emitStyles(el).map((v) => `\t${v}`));
+  } else out.push(...emitStyles(el));
+  ignoreStyles = false; // No reason to ignore these styles
+
+  // 3) Identify element to draw
+  switch (tag) {
     case "rect":
-      needsPath = true;
       {
         const x = +el.getAttribute("x")! || 0;
         const y = +el.getAttribute("y")! || 0;
         const w = +el.getAttribute("width")! || 0;
         const h = +el.getAttribute("height")! || 0;
-		const round =
-      (parseFloat(el.getAttribute("rx") || "0") +
-      parseFloat(el.getAttribute("ry") || "0")) / 2;
-		// if rx>0, emit a roundRect, otherwise a normal rect
-		if (round > 0) {
-			out.push(`\tround rect ${x} ${y} ${w} ${h} ${round}`);
-		} else {
-			out.push(`\trect ${x} ${y} ${w} ${h}`);
-		}
-
+        const round =
+          (parseFloat(el.getAttribute("rx") || "0") +
+            parseFloat(el.getAttribute("ry") || "0")) /
+          2;
+        if (round > 0) {
+          out.push(`round rect ${x} ${y} ${w} ${h} ${round}`);
+        } else {
+          out.push(`rect ${x} ${y} ${w} ${h}`);
+        }
       }
       break;
 
     case "circle":
-      needsPath = true;
       {
         const cx = +el.getAttribute("cx")! || 0;
         const cy = +el.getAttribute("cy")! || 0;
         const r = +el.getAttribute("r")! || 0;
-        // `circle` in your DSL just emits an arc under the hood
         out.push(`circle ${cx} ${cy} ${r}`);
       }
       break;
 
     case "ellipse":
-      needsPath = true;
       {
         const cx = +el.getAttribute("cx")! || 0;
         const cy = +el.getAttribute("cy")! || 0;
         const rx = +el.getAttribute("rx")! || 0;
         const ry = +el.getAttribute("ry")! || 0;
-        out.push(`ellipse ${cx} ${cy} ${rx} ${ry} 0 0 360`);
+        out.push(`ellipse ${cx} ${cy} ${rx} ${ry}`);
       }
       break;
 
     case "path":
-      needsPath = true;
       out.push("path {");
       const d = el.getAttribute("d") || "";
-      out.push(...convertPath(d));
+      out.push(...utils.convertPath(d));
       break;
     case "line":
       {
@@ -213,6 +177,7 @@ function convertElement(el: Element): Line[] {
       break;
     case "polyline":
     case "polygon": {
+      out.push(``);
       const pts = (el.getAttribute("points") || "")
         .trim()
         .split(/[\s,]+/)
@@ -227,52 +192,58 @@ function convertElement(el: Element): Line[] {
           out.push(`line to ${pts[0]} ${pts[1]}`);
         }
       }
+      out.push(``);
       break;
     }
     case "g":
-      out.push("group {");
-      if (pathStyles.fill) out.push("\tfill style " + el.getAttribute("fill"));
-      if (pathStyles.stroke)
-        out.push("\tstroke style " + el.getAttribute("fill"));
+      let parentGroupStyles = groupStyles;
+      groupStyles = getStyles(el);
       for (let i = 0; i < el.children.length; i++) {
         out.push(...convertElement(el.children[i]).map((v) => `\t${v}`));
       }
+      if (!groupNested) {
+        inGroup = false;
+        out.push(...applyStyles().map((v) => `\t${v}`));
+        groupStyles = resetStyles();
+        ignoreStyles = true;
+      } else {
+        groupStyles = parentGroupStyles;
+      }
+      out.push("}");
       break;
     default:
-      console.warn(`Unsupported tag: ${tag}`);
+      console.warn(`\x1b[93mUnsupported tag: ${tag}\x1b[0m`);
       return out;
   }
-
-	// 3) Finally emit fill/stroke commands for that path
-	if(pathStyles.fill) out.push('fill');
-	if(pathStyles.stroke) out.push('stroke');
-
-
-	if(tag == "g") out.push("}"); // Close the group.
-	return out;
+  return out;
 }
 
 export default function toCanvas(svgText: string): string {
-	let doc: Document;
-	if (typeof DOMParser !== "undefined") {
-		// in a browser
-		doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
-	} else {
-		// in Node
-		const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
-		doc = dom.window.document;
-	}
-	const svg = doc.documentElement;
+  let doc: Document;
+  if (typeof DOMParser !== "undefined") {
+    // in a browser
+    doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  } else {
+    // in Node
+    const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
+    doc = dom.window.document;
+  }
+  const svg = doc.documentElement;
 
-	const lines: Line[] = [];
-	// Set up canvas size if provided
-	if (svg.hasAttribute('width')) lines.push(`width ${+(svg.getAttribute('width') as any)}`);
-	if (svg.hasAttribute('height')) lines.push(`height ${+(svg.getAttribute('height') as any)}`);
+  const lines: Line[] = [];
+  // Set up canvas size if provided
+  if (svg.hasAttribute("width"))
+    lines.push(`width ${+(svg.getAttribute("width") as any)}`);
+  if (svg.hasAttribute("height"))
+    lines.push(`height ${+(svg.getAttribute("height") as any)}`);
 
-	// Walk children
-	for (let i = 0; i < svg.children.length; i++) {
-		lines.push(...convertElement(svg.children[i]));
-	}
+  // Walk children
+  for (let i = 0; i < svg.children.length; i++) {
+    lines.push(...convertElement(svg.children[i]));
+  }
 
-	return lines.join('\n');
+  // Apply fills and strokes still left over
+  lines.push(...applyStyles());
+
+  return lines.join("\n");
 }

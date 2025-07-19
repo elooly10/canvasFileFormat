@@ -8,11 +8,11 @@
   <rect x="10" y="10" width="80" height="50"
         fill="orange" stroke="black" stroke-width="2"/>
   
-  <!-- 2) Rounded rect (rx > 0) -->
-  <rect x="120" y="10" width="80" height="50" rx="10"
+  <!-- 2) Rounded rect -->
+  <rect x="120" y="10" width="80" height="50" rx="10" ry="10"
         fill="none" stroke="teal" stroke-width="4" />
 
-  <!-- 3) Circle and ellipse (ellipse is broken) -->
+  <!-- 3) Circle and ellipse -->
   <circle cx="50" cy="120" r="30"
           fill="green" stroke="none"/>
   <ellipse cx="150" cy="120" rx="40" ry="20"

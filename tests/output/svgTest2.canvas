@@ -3,25 +3,24 @@ height 400
 
 begin path
 stroke style black
-stroke width 2
 path {
 	skip 50 50
 	130 50
 	160 50
+	160 110
 	120 140
-	120 100
+	60 140
+	60 100
 	bezier 40 80 80 20 140 40
 	bezier 160 50 150 10 120 20
 	quadratic 100 20 80 60
 	quadratic 60 90 40 60
 }
 stroke
-
-begin path
-stroke style red
-stroke width 4
 group {
-	stroke style none
+	stroke style red
+	stroke width 4
+	stroke
 	
 	begin path
 	path {
@@ -29,22 +28,22 @@ group {
 		300 50
 		300 150
 	}
-	
-	begin path
-	fill style yellow
-	stroke style blue
-	stroke width 1
+	stroke
 	group {
 		fill style yellow
-		stroke style yellow
+		stroke style blue
+		stroke width 1
+		fill
+		stroke
 		
 		begin path
 		circle 250 100 30
+		fill
+		stroke
 		
 		begin path
-		ellipse 280 100 10 40 0 0 360
+		ellipse 280 100 10 40
+	}
 	fill
 	stroke
-	}
-stroke
 }

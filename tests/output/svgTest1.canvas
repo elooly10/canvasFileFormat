@@ -5,14 +5,14 @@ begin path
 fill style orange
 stroke style black
 stroke width 2
-	rect 10 10 80 50
+rect 10 10 80 50
 fill
 stroke
 
 begin path
 stroke style teal
 stroke width 4
-	round rect 120 10 80 50 5
+round rect 120 10 80 50 10
 stroke
 
 begin path
@@ -23,7 +23,7 @@ fill
 begin path
 stroke style purple
 stroke width 3
-ellipse 150 120 40 20 0 0 360
+ellipse 150 120 40 20
 stroke
 
 begin path
@@ -36,37 +36,41 @@ stroke
 begin path
 stroke style blue
 stroke width 2
+
 move to 120 200
 line to 160 240
 line to 200 200
 line to 240 240
+
 stroke
 
 begin path
 fill style pink
 stroke style maroon
 stroke width 3
+
 move to 260 200
 line to 300 240
 line to 340 200
 line to 320 160
 line to 260 200
+
 fill
 stroke
-
-begin path
-fill style lightblue
-stroke style navy
-stroke width 2
 group {
 	fill style lightblue
-	stroke style lightblue
+	stroke style navy
+	stroke width 2
+	fill
+	stroke
 	
 	begin path
-		rect 280 10 80 50
+	rect 280 10 80 50
+	fill
+	stroke
 	
 	begin path
 	circle 320 100 25
-fill
-stroke
+	fill
+	stroke
 }

@@ -25,7 +25,7 @@
     stroke-width="2"
   />
 
-  <!-- 2) Nested groups with inherited & overridden styles – goes poorly -->
+  <!-- 2) Nested groups with inherited & overridden styles -->
   <g fill="none" stroke="red" stroke-width="4">
     <path d="M 200 50 L 300 50 L 300 150 Z"/>
     <g stroke="blue" stroke-width="1" fill="yellow">

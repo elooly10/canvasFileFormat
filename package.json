@@ -8,9 +8,11 @@
   ],
   "license": "MIT",
   "author": "elooly",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "test": "node test.ts"
+    "test": "tsc && node dist/test.js",
+    "index": "tsc && node dist/"
   },
   "dependencies": {
     "@types/jsdom": "^21.1.7",
@@ -18,5 +20,9 @@
     "canvas": "^3.1.2",
     "jsdom": "^26.1.0",
     "ts": "^0.2.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

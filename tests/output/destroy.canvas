@@ -1,0 +1,113 @@
+width 271
+height 222
+group {
+	transform 1 0 0 1 169.405 120.345
+	
+	begin path
+	fill style white
+	rect 0 0 100 100
+	fill
+	
+	begin path
+	fill style #CCCCCC
+	rect 169.405 120.345 100 100
+	fill
+	
+	begin path
+	fill style #B1B1B1
+	rect 179.405 130.345 10 10
+	fill
+	
+	begin path
+	fill style #E4E4E4
+	rect 199.405 150.345 10 10
+	fill
+	
+	begin path
+	rect 219.405 190.345 10 10
+	fill
+	
+	begin path
+	fill style #B1B1B1
+	rect 199.405 200.345 10 10
+	fill
+	
+	begin path
+	rect 239.405 180.345 10 10
+	fill
+	
+	begin path
+	rect 249.405 160.345 10 10
+	fill
+	
+	begin path
+	rect 249.405 140.345 10 10
+	fill
+}
+transform 1 0 0 1 103.105 73.0706
+rotate 30
+transform 1 0 0 1 -103.105 -73.0706
+
+begin path
+fill style #E4B14E
+stroke style #B18022
+stroke width 5
+rect 103.105 73.0706 35 95
+transform 1 0 0 1 54.6901 151.928
+rotate 30
+transform 1 0 0 1 -54.6901 -151.928
+fill
+stroke
+
+begin path
+fill style #996611
+rect 54.6901 151.928 5 5
+transform 1 0 0 1 85.1169 169.495
+rotate 30
+transform 1 0 0 1 -85.1169 -169.495
+fill
+
+begin path
+rect 85.1169 169.495 5 5
+transform 1 0 0 1 96.0167 28.7596
+rotate 30
+transform 1 0 0 1 -96.0167 -28.7596
+fill
+
+begin path
+fill style #CCCCCC
+stroke style #B1B1B1
+rect 96.0167 28.7596 95 35
+transform 1 0 0 1 77.6016 55.6555
+rotate 30
+transform 1 0 0 1 -77.6016 -55.6555
+fill
+stroke
+
+begin path
+fill style #666666
+rect 77.6016 55.6555 5 5
+transform 1 0 0 1 159.874 103.156
+rotate 30
+transform 1 0 0 1 -159.874 -103.156
+fill
+
+begin path
+rect 159.874 103.156 5 5
+transform 1 0 0 1 177.374 72.8446
+rotate 30
+transform 1 0 0 1 -177.374 -72.8446
+fill
+
+begin path
+rect 177.374 72.8446 5 5
+transform 1 0 0 1 95.1016 25.3446
+rotate 30
+transform 1 0 0 1 -95.1016 -25.3446
+fill
+
+begin path
+rect 95.1016 25.3446 5 5
+fill
+
+begin path
