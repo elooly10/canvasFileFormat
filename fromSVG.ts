@@ -1,4 +1,3 @@
-import { JSDOM } from "jsdom";
 import * as utils from "./SVGutils.js"
 type Line = string;
 type Styles = {
@@ -218,15 +217,10 @@ function convertElement(el: Element): Line[] {
   return out;
 }
 
-export default function toCanvas(svgText: string): string {
-  let doc: Document;
-  if (typeof DOMParser !== "undefined") {
+export default function toCanvas(svgText: string, doc: Document | null = null): string {
+  if (!doc) {
     // in a browser
     doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
-  } else {
-    // in Node
-    const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
-    doc = dom.window.document;
   }
   const svg = doc.documentElement;
 

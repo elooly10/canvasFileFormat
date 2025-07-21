@@ -1,4 +1,3 @@
-import { JSDOM } from "jsdom";
 import * as utils from "./SVGutils.js";
 function resetStyles() {
     return {
@@ -219,8 +218,15 @@ export default function toCanvas(svgText) {
     }
     else {
         // in Node
-        const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
-        doc = dom.window.document;
+        if (require("jsdom")) {
+            let { JSDOM } = require("jsdom");
+            const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
+            doc = dom.window.document;
+        }
+        else {
+            console.error("ERROR: No parser provided");
+            return "ERROR – No parser provided";
+        }
     }
     const svg = doc.documentElement;
     const lines = [];
