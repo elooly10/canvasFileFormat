@@ -2,7 +2,7 @@ width 500
 height 400
 
 begin path
-stroke style black
+stroke style orange
 path {
 	skip 50 50
 	130 50
@@ -12,7 +12,9 @@ path {
 	60 140
 	60 100
 	bezier 40 80 80 20 140 40
-	bezier 160 50 150 10 120 20
+	arc 140 40 180 80 30
+	arc 180 80 360 110 10
+	bezier 380 120 370 80 340 90
 	quadratic 100 20 80 60
 	quadratic 60 90 40 60
 }

@@ -15,14 +15,12 @@
     "index": "tsc && node dist/"
   },
   "dependencies": {
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.0.14",
     "canvas": "^3.1.2",
-    "jsdom": "^26.1.0",
-    "ts": "^0.2.2"
-  },
-  "devDependencies": {
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "jsdom": "^26.1.0"
   }
 }

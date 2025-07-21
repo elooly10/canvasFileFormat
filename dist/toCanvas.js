@@ -167,6 +167,12 @@ export default function toCanvas(canvas, text, resetCanvas = true, scale = 1) {
                     ctx.setTransform(...parts.map((a, i) => parseFloat(a) * (i > 3 ? scale : 1)));
                 }
             }
+            else if (content.startsWith("transform relative ")) {
+                const parts = content.replace("transform relative", "").trim().split(" ");
+                if (parts.length === 6) {
+                    ctx.transform(...parts.map((a, i) => parseFloat(a) * (i > 3 ? scale : 1)));
+                }
+            }
             // Angle Modes
             if (content == 'use radians' || content == 'use rad') {
                 angleMode = 'rad';

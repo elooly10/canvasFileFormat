@@ -5,12 +5,10 @@ export function parseTransform(transform) {
     let m;
     while ((m = RE.exec(transform))) {
         const [, cmd, args] = m;
-        console.log(cmd, "\t", args);
         const nums = args
             .trim()
             .split(/[\s,]+/)
             .map(parseFloat);
-        console.log(nums);
         switch (cmd) {
             case "translate":
                 commands.push({ type: "translate", values: [nums[0], nums[1]] });
@@ -44,7 +42,7 @@ export function convertPath(d) {
     let currX = 0, currY = 0;
     for (let cmd of commands) {
         const type = cmd[0];
-        const coords = cmd
+        const tokens = cmd
             .slice(1)
             .trim()
             .split(/[\s,]+/)
@@ -52,79 +50,102 @@ export function convertPath(d) {
             .map(parseFloat);
         switch (type) {
             case "M":
-                currX = coords[0];
-                currY = coords[1];
+                currX = tokens[0];
+                currY = tokens[1];
                 lines.push(`\tskip ${currX} ${currY}`);
                 break;
             case "m":
-                currX += coords[0];
-                currY += coords[1];
+                currX += tokens[0];
+                currY += tokens[1];
                 lines.push(`\tskip ${currX} ${currY}`);
                 break;
             case "L":
-                currX = coords[0];
-                currY = coords[1];
+                currX = tokens[0];
+                currY = tokens[1];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "l":
-                currX += coords[0];
-                currY += coords[1];
+                currX += tokens[0];
+                currY += tokens[1];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "H":
-                currX = coords[0];
+                currX = tokens[0];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "V":
-                currY = coords[0];
+                currY = tokens[0];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "h":
-                currX += coords[0];
+                currX += tokens[0];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "v":
-                currY += coords[0];
+                currY += tokens[0];
                 lines.push(`\t${currX} ${currY}`);
                 break;
             case "C":
-                lines.push(`\tbezier ${coords.join(" ")}`);
-                currX = coords[4];
-                currY = coords[5];
+                lines.push(`\tbezier ${tokens.join(" ")}`);
+                currX = tokens[4];
+                currY = tokens[5];
                 break;
             case "c":
                 lines.push(`\tbezier ${[
-                    coords[0] + currX,
-                    coords[1] + currY,
-                    coords[2] + currX,
-                    coords[3] + currY,
-                    coords[4] + currX,
-                    coords[5] + currY,
+                    tokens[0] + currX,
+                    tokens[1] + currY,
+                    tokens[2] + currX,
+                    tokens[3] + currY,
+                    tokens[4] + currX,
+                    tokens[5] + currY,
                 ].join(" ")}`);
-                currX += coords[4];
-                currY += coords[5];
+                currX += tokens[4];
+                currY += tokens[5];
                 break;
             case "Q":
-                lines.push(`\tquadratic ${coords.join(" ")}`);
-                currX = coords[2];
-                currY = coords[3];
+                lines.push(`\tquadratic ${tokens.join(" ")}`);
+                currX = tokens[2];
+                currY = tokens[3];
                 break;
             case "q":
                 lines.push(`\tquadratic ${[
-                    coords[0] + currX,
-                    coords[1] + currY,
-                    coords[2] + currX,
-                    coords[3] + currY,
+                    tokens[0] + currX,
+                    tokens[1] + currY,
+                    tokens[2] + currX,
+                    tokens[3] + currY,
                 ].join(" ")}`);
-                currX += coords[2];
-                currY += coords[3];
+                currX += tokens[2];
+                currY += tokens[3];
+                break;
+            case "A":
+                // absolute arc: rx ry xAxisRotation largeArcFlag sweepFlag x y
+                {
+                    const [rx, ry, xRot, largeArc, sweep, x, y] = tokens;
+                    // Ignores most params
+                    const radius = (rx + ry) / 2;
+                    lines.push(`\tarc ${currX} ${currY} ${x} ${y} ${radius}`);
+                    currX = x;
+                    currY = y;
+                }
+                break;
+            case "a":
+                // relative arc: rx ry xAxisRotation largeArcFlag sweepFlag dx dy
+                {
+                    const [rx, ry, xRot, largeArc, sweep, dx, dy] = tokens;
+                    const x = currX + dx;
+                    const y = currY + dy;
+                    const radius = (rx + ry) / 2;
+                    lines.push(`\tarc ${currX} ${currY} ${x} ${y} ${radius}`);
+                    currX = x;
+                    currY = y;
+                }
                 break;
             case "Z":
             case "z":
                 lines.push("}");
                 return lines;
             default:
-                console.warn(`\x1b[93mUnsupported <path> element: ${type}\x1b[0m`);
+                console.warn(`\x1b[93mUnsupported <path> command: ${type}\x1b[0m`);
         }
     }
     lines.push("}");
