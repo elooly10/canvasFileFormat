@@ -210,23 +210,10 @@ function convertElement(el) {
     }
     return out;
 }
-export default function toCanvas(svgText) {
-    let doc;
-    if (typeof DOMParser !== "undefined") {
+export default function toCanvas(svgText, doc = null) {
+    if (!doc) {
         // in a browser
         doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
-    }
-    else {
-        // in Node
-        if (require("jsdom")) {
-            let { JSDOM } = require("jsdom");
-            const dom = new JSDOM(svgText, { contentType: "image/svg+xml" });
-            doc = dom.window.document;
-        }
-        else {
-            console.error("ERROR: No parser provided");
-            return "ERROR – No parser provided";
-        }
     }
     const svg = doc.documentElement;
     const lines = [];
