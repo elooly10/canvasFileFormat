@@ -1,5 +1,4 @@
 type angleMode = 'rad' | 'deg' | 'turn';
-import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D, Canvas as NodeCanvas } from 'canvas'
 const fillStyle = "black";
 const strokeStyle = "black";
 const lineWidth = 1;
@@ -33,8 +32,8 @@ function toRadians(value: number, mode: angleMode): number {
 	else return value
 }
 
-type canvasElement = HTMLCanvasElement | OffscreenCanvas | NodeCanvas
-type canvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | NodeCanvasRenderingContext2D
+type canvasElement = HTMLCanvasElement | OffscreenCanvas
+type canvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
 export default function applyCFF(
 	canvas: canvasElement | canvasContext,
 	text: string,
