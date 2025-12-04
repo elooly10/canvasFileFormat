@@ -217,7 +217,7 @@ function convertElement(el: Element): Line[] {
   return out;
 }
 
-export default function toCanvas(svgText: string, doc: Document | null = null): string {
+export default function fromSVG(svgText: string, doc: Document | null = null): string {
   if (!doc) {
     // in a browser
     doc = new DOMParser().parseFromString(svgText, "image/svg+xml");

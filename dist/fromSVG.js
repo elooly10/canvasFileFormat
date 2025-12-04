@@ -210,7 +210,7 @@ function convertElement(el) {
     }
     return out;
 }
-export default function toCanvas(svgText, doc = null) {
+export default function fromSVG(svgText, doc = null) {
     if (!doc) {
         // in a browser
         doc = new DOMParser().parseFromString(svgText, "image/svg+xml");

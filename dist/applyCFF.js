@@ -26,8 +26,9 @@ function toRadians(value, mode) {
     else
         return value;
 }
-export default function toCanvas(canvas, text, resetCanvas = true, scale = 1) {
-    const ctx = canvas.getContext('2d');
+export default function applyCFF(canvas, text, resetCanvas = true, scale = 1) {
+    const canvasElementMode = !!canvas.getContext;
+    const ctx = canvasElementMode ? canvas.getContext('2d') : canvas;
     if (ctx) {
         applyStyles(ctx, scale);
         let inPath = false, inGroup = false;
@@ -92,11 +93,11 @@ export default function toCanvas(canvas, text, resetCanvas = true, scale = 1) {
             if (content.startsWith('return'))
                 break; // Stop processing on 'return'
             // Canvas Metadata Manipulation
-            else if (content.startsWith('height ')) {
+            else if (content.startsWith('height ') && canvasElementMode) {
                 const height = parseInt(content.replace('height', ''));
                 canvas.height = height * scale;
             }
-            else if (content.startsWith('width ')) {
+            else if (content.startsWith('width ') && canvasElementMode) {
                 const width = parseInt(content.replace('width', ''));
                 canvas.width = width * scale;
             }
@@ -142,7 +143,7 @@ export default function toCanvas(canvas, text, resetCanvas = true, scale = 1) {
                 ctx.reset();
                 applyStyles(ctx, scale);
             }
-            else if (content == 'reset' && !ctx.reset) {
+            else if (content == 'reset' && !ctx.reset && canvasElementMode) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 applyStyles(ctx, scale);
             }
@@ -273,7 +274,7 @@ export default function toCanvas(canvas, text, resetCanvas = true, scale = 1) {
                     ctx.clearRect(...parts.map((a) => parseFloat(a) * scale));
                 }
             }
-            else if (content == 'clear') {
+            else if (content == 'clear' && canvasElementMode) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
             /*

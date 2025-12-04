@@ -12,7 +12,8 @@
   "type": "module",
   "scripts": {
     "test": "tsc && node dist/test.js",
-    "index": "tsc && node dist/"
+    "index": "tsc && node dist/",
+    "build": "tsc"
   },
   "dependencies": {
     "typescript": "^5.8.3"

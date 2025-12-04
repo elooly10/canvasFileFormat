@@ -1,3 +1,3 @@
-import toCanvas from './toCanvas.js';
+import applyCFF from './applyCFF.js';
 import fromSVG from "./fromSVG.js";
-export { toCanvas, fromSVG };
+export { applyCFF, fromSVG };

@@ -1,4 +1,5 @@
 type angleMode = 'rad' | 'deg' | 'turn';
+import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D, Canvas as NodeCanvas } from 'canvas'
 const fillStyle = "black";
 const strokeStyle = "black";
 const lineWidth = 1;
@@ -9,7 +10,7 @@ const lineDash: number[] = [];
 const lineDashOffset = 0;
 
 function applyStyles(
-	ctx: CanvasRenderingContext2D,
+	ctx: canvasContext,
 	scale: number
 ) {
 	ctx.fillStyle = fillStyle;
@@ -32,14 +33,16 @@ function toRadians(value: number, mode: angleMode): number {
 	else return value
 }
 
-
-export default function toCanvas(
-	canvas: HTMLCanvasElement,
+type canvasElement = HTMLCanvasElement | OffscreenCanvas | NodeCanvas
+type canvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | NodeCanvasRenderingContext2D
+export default function applyCFF(
+	canvas: canvasElement | canvasContext,
 	text: string,
 	resetCanvas: boolean = true,
 	scale: number = 1
 ) {
-	const ctx: CanvasRenderingContext2D = canvas.getContext('2d') as any;
+	const canvasElementMode = !!(canvas as canvasElement).getContext
+	const ctx: canvasContext = canvasElementMode? (canvas as canvasElement).getContext('2d')! as canvasContext: canvas as canvasContext;
 	if (ctx) {
 		applyStyles(
 			ctx,
@@ -110,12 +113,12 @@ export default function toCanvas(
 				break; // Stop processing on 'return'
 
 			// Canvas Metadata Manipulation
-			else if (content.startsWith('height ')) {
+			else if (content.startsWith('height ') && canvasElementMode) {
 				const height = parseInt(content.replace('height', ''));
-				canvas.height = height * scale;
-			} else if (content.startsWith('width ')) {
+				(canvas as canvasElement).height = height * scale;
+			} else if (content.startsWith('width ') && canvasElementMode) {
 				const width = parseInt(content.replace('width', ''));
-				canvas.width = width * scale;
+				(canvas as canvasElement).width = width * scale;
 			}
 
 			// Canvas Style Manipulation
@@ -129,13 +132,12 @@ export default function toCanvas(
 			}
 			if (content.startsWith('stroke width ')) {
 				ctx.lineWidth = parseFloat(content.replace('stroke width', '').trim()) * scale;
-
 			}
 			if (content.startsWith('line cap ')) {
-				ctx.lineCap = content.replace('line cap', '').trim() as any;
+				ctx.lineCap = content.replace('line cap', '').trim() as CanvasLineCap;
 
 			} else if (content.startsWith('line join ')) {
-				ctx.lineJoin = content.replace('line join', '').trim() as any;
+				ctx.lineJoin = content.replace('line join', '').trim() as CanvasLineJoin;
 
 			} else if (content.startsWith('miter limit ')) {
 				ctx.miterLimit = parseFloat(content.replace('miter limit', '').trim()) * scale;
@@ -157,11 +159,11 @@ export default function toCanvas(
 				ctx.save()
 			} else if (content == 'restore') {
 				ctx.restore()
-			} else if (content == 'reset' && ctx.reset) {
-				ctx.reset();
+			} else if (content == 'reset' && (ctx as any).reset) {
+				(ctx as any).reset();
 				applyStyles(ctx, scale);
-			} else if (content == 'reset' && !ctx.reset) {
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+			} else if (content == 'reset' && !(ctx as any).reset && canvasElementMode) {
+				ctx.clearRect(0, 0, (canvas as canvasElement).width, (canvas as canvasElement).height);
 				applyStyles(ctx, scale);
 			}
 
@@ -341,8 +343,8 @@ export default function toCanvas(
 					if (parts.length === 4) {
 						ctx.clearRect(...(parts.map((a) => parseFloat(a) * scale) as [number, number, number, number]));
 					}
-				} else if (content == 'clear') {
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
+				} else if (content == 'clear' && canvasElementMode) {
+					ctx.clearRect(0, 0, (canvas as canvasElement).width, (canvas as canvasElement).height);
 				}
 
 				/* 
