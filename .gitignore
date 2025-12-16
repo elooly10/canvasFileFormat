@@ -1,7 +1,4 @@
 .vscode
-test.ts
-test.js
-
 # Dependency directories
 node_modules/
 

@@ -1,0 +1,9 @@
+width 100
+height 100
+stroke style black
+begin path
+stroke path {
+	skip 10 50
+	bezier 10 27.909 27.909 10 50 10
+	bezier 72.091 10 90 27.909 90 50
+}

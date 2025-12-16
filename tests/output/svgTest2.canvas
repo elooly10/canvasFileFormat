@@ -1,9 +1,9 @@
 width 500
 height 400
-
-begin path
 stroke style orange
-path {
+stroke width 2
+begin path
+stroke path {
 	skip 50 50
 	130 50
 	160 50
@@ -12,40 +12,34 @@ path {
 	60 140
 	60 100
 	bezier 40 80 80 20 140 40
-	arc 140 40 180 80 30
-	arc 180 80 360 110 10
+	bezier 151.472 34.521 165.152 36.868 174.142 45.858
+	bezier 183.132 54.848 185.479 68.528 180 80
+	bezier 188.284 30.294 235.294 -3.284 285 5
+	bezier 334.706 13.284 368.284 60.294 360 110
 	bezier 380 120 370 80 340 90
 	quadratic 100 20 80 60
 	quadratic 60 90 40 60
 }
-stroke
 group {
 	stroke style red
 	stroke width 4
-	stroke
-	
 	begin path
-	path {
+	stroke path {
 		skip 200 50
 		300 50
 		300 150
 	}
-	stroke
 	group {
 		fill style yellow
 		stroke style blue
 		stroke width 1
-		fill
-		stroke
-		
 		begin path
 		circle 250 100 30
 		fill
 		stroke
-		
 		begin path
 		ellipse 280 100 10 40
+		fill
+		stroke
 	}
-	fill
-	stroke
 }

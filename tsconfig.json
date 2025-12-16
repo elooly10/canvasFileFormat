@@ -4,6 +4,8 @@
     "module": "NodeNext",
     "esModuleInterop": true,
     "strict": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist"
   }
 }

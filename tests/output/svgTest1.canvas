@@ -1,74 +1,62 @@
 width 400
 height 300
-
-begin path
 fill style orange
 stroke style black
 stroke width 2
+begin path
 rect 10 10 80 50
 fill
 stroke
-
-begin path
 stroke style teal
 stroke width 4
+begin path
 round rect 120 10 80 50 10
 stroke
-
-begin path
 fill style green
+stroke width 1
+begin path
 circle 50 120 30
 fill
-
-begin path
 stroke style purple
 stroke width 3
+begin path
 ellipse 150 120 40 20
 stroke
-
-begin path
 stroke style gray
 stroke width 5
+begin path
 move to 10 200
 line to 100 250
 stroke
-
-begin path
 stroke style blue
 stroke width 2
+begin path
 
 move to 120 200
 line to 160 240
 line to 200 200
 line to 240 240
-
 stroke
-
-begin path
 fill style pink
 stroke style maroon
 stroke width 3
+begin path
 
 move to 260 200
 line to 300 240
 line to 340 200
 line to 320 160
-line to 260 200
-
+close path
 fill
 stroke
 group {
 	fill style lightblue
 	stroke style navy
 	stroke width 2
-	fill
-	stroke
-	
 	begin path
 	rect 280 10 80 50
 	fill
 	stroke
-	
 	begin path
 	circle 320 100 25
 	fill

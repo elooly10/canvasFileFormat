@@ -1,0 +1,11 @@
+# Source files
+*.ts
+!*.d.ts
+# Build config
+tsconfig.json
+.vscode/
+.DS_Store
+
+# Tests and Verification
+tests/
+test.*

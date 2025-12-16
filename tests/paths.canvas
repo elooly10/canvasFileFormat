@@ -5,7 +5,7 @@ stroke style lime
 stroke width 10
 line join round
 
-path {
+stroke path {
     240 80
     300 40
     350 70
@@ -15,5 +15,3 @@ path {
     quadratic 400 300 200 100
     arc 600 800 500 550 200
 }
-
-stroke

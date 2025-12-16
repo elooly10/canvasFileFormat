@@ -1,16 +1,16 @@
+fill style white
+fill rect 0 0 1000 1000
+fill style blue
+stroke style green
+stroke width 10
+rect -10 -10 200 200
+stroke 
 group {
-    stroke style blue
-    path {
+    stroke path {
         skip 20 20
         200 20
     }
+    stroke style blue
     rect 300 300 300 300
     stroke
 }
-
-stroke style green
-path {
-    skip 20 20
-    120 120
-}
-stroke

@@ -1,0 +1,139 @@
+width 800
+height 600
+fill style #f0f0f0
+begin path
+rect 0 0 800 600
+fill
+fill style lightgray
+stroke style gray
+begin path
+rect 50 50 100 50
+fill
+stroke
+fill style gray
+begin path
+fill text 50 40 Original (50,50)
+group {
+	transform 1 0 0 1 200 0
+	group {
+		fill style skyblue
+		stroke style blue
+		stroke width 2
+		begin path
+		rect 50 50 100 50
+		fill
+		stroke
+		fill style blue
+		stroke width 1
+		begin path
+		fill text 50 40 Translate (200,0)
+	}
+}
+reset transformations
+group {
+	transform 1 0 0 1 100 200
+	group {
+		group {
+			transform 1 0 0 1 100 75
+			rotate 45
+			transform 1 0 0 1 -100 -75
+			fill style lightcoral
+			stroke style red
+			stroke width 2
+			begin path
+			rect 50 50 100 50
+			fill
+			stroke
+		}
+		reset transformations
+		fill style red
+		stroke width 1
+		begin path
+		fill text 50 40 Rotate (45 deg around center)
+	}
+}
+reset transformations
+group {
+	transform 1 0 0 1 250 200
+	group {
+		group {
+			scale 1.5 0.8
+			fill style lightgreen
+			stroke style green
+			stroke width 2
+			begin path
+			rect 50 50 100 50
+			fill
+			stroke
+		}
+		reset transformations
+		fill style green
+		stroke width 1
+		begin path
+		fill text 50 40 Scale (1.5x, 0.8y)
+	}
+}
+reset transformations
+group {
+	transform 1 0 0 1 450 0
+	group {
+		group {
+			transform 1 0 0.577 1 0 0
+			fill style plum
+			stroke style purple
+			stroke width 2
+			begin path
+			rect 50 50 100 50
+			fill
+			stroke
+		}
+		reset transformations
+		fill style purple
+		stroke width 1
+		begin path
+		fill text 50 40 SkewX (30 deg)
+	}
+}
+reset transformations
+group {
+	transform 1 0 0 1 450 150
+	group {
+		group {
+			transform 1 0.364 0 1 0 0
+			fill style orange
+			stroke style darkorange
+			stroke width 2
+			begin path
+			rect 50 50 100 50
+			fill
+			stroke
+		}
+		reset transformations
+		fill style darkorange
+		stroke width 1
+		begin path
+		fill text 50 40 SkewY (20 deg)
+	}
+}
+reset transformations
+group {
+	transform 1 0 0 1 50 400
+	group {
+		group {
+			transform 1.2 0.268 0 0.9 50 20
+			fill style gold
+			stroke style darkgoldenrod
+			stroke width 2
+			begin path
+			rect 50 50 100 50
+			fill
+			stroke
+		}
+		reset transformations
+		fill style darkgoldenrod
+		stroke width 1
+		begin path
+		fill text 50 40 Matrix (combined transformations)
+	}
+}
+reset transformations

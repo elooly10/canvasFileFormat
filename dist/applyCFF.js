@@ -1,20 +1,33 @@
-const fillStyle = "black";
-const strokeStyle = "black";
-const lineWidth = 1;
-const lineCap = "butt";
-const lineJoin = "miter";
-const miterLimit = 10;
-const lineDash = [];
-const lineDashOffset = 0;
-function applyStyles(ctx, scale) {
-    ctx.fillStyle = fillStyle;
-    ctx.lineWidth = lineWidth * scale;
-    ctx.strokeStyle = strokeStyle;
-    ctx.lineCap = lineCap;
-    ctx.lineJoin = lineJoin;
-    ctx.miterLimit = miterLimit * scale;
-    ctx.setLineDash(lineDash.map(v => v * scale));
-    ctx.lineDashOffset = lineDashOffset * scale;
+// import { Path2D } from "path2d"; // <-- Path2D Polyfill for testing
+import commands from "./commands.js";
+const baseStyle = {
+    fillStyle: "black",
+    strokeStyle: "black",
+    lineWidth: 1,
+    lineCap: "butt",
+    lineJoin: "miter",
+    miterLimit: 10,
+    lineDash: [],
+    lineDashOffset: 0,
+    shadow: {
+        blur: 0,
+        color: "transparent",
+        offset: [0, 0],
+    }
+};
+function applyStyles(ctx, scale, style = baseStyle) {
+    ctx.fillStyle = style.fillStyle;
+    ctx.lineWidth = style.lineWidth * scale;
+    ctx.strokeStyle = style.strokeStyle;
+    ctx.lineCap = style.lineCap;
+    ctx.lineJoin = style.lineJoin;
+    ctx.miterLimit = style.miterLimit * scale;
+    ctx.setLineDash(style.lineDash.map(v => v * scale));
+    ctx.lineDashOffset = style.lineDashOffset * scale;
+    ctx.shadowBlur = style.shadow.blur;
+    ctx.shadowColor = style.shadow.color;
+    ctx.shadowOffsetX = style.shadow.offset[0];
+    ctx.shadowOffsetY = style.shadow.offset[1];
 }
 function toRadians(value, mode) {
     if (mode === 'deg') {
@@ -26,19 +39,76 @@ function toRadians(value, mode) {
     else
         return value;
 }
-export default function applyCFF(canvas, text, resetCanvas = true, scale = 1) {
-    const canvasElementMode = !!canvas.getContext;
-    const ctx = canvasElementMode ? canvas.getContext('2d') : canvas;
+function pathMode(path, scale) {
+    let path2d = new Path2D();
+    for (let i = 0; i < path.length; i++) {
+        const content = path[i].split('//')[0].trim(); // Get content, trim, and remove comments
+        const commandText = content.split(' ').map((v, i) => v.trim());
+        let command = commandText[0];
+        const contents = commandText.slice(1).map((v) => parseFloat(v) * scale);
+        if (!isNaN(parseFloat(command))) {
+            contents.unshift(parseFloat(command));
+            command = 'line';
+        }
+        if (command == 'skip' || command == 'move')
+            path2d.moveTo(contents[0], contents[1]);
+        else if (command == 'line')
+            path2d.lineTo(contents[0], contents[1]);
+        else if (command == 'bezier')
+            path2d.bezierCurveTo(contents[0], contents[1], contents[2], contents[3], contents[4], contents[5]);
+        else if (command == 'quadratic')
+            path2d.quadraticCurveTo(contents[0], contents[1], contents[2], contents[3]);
+        else if (command == 'arc')
+            path2d.arc(contents[0], contents[1], contents[2], contents[3], contents[4], commandText[6] == 'true');
+        else if (command == 'arcTo')
+            path2d.arcTo(contents[0], contents[1], contents[2], contents[3], contents[4]);
+        else if (command == 'ellipse')
+            path2d.ellipse(contents[0], contents[1], contents[2], contents[3], contents[4], contents[5], contents[6], commandText[8] == 'true');
+        else if (command == 'rect')
+            path2d.rect(contents[0], contents[1], contents[2], contents[3]);
+        else if (command == 'roundRect')
+            path2d.roundRect(contents[0], contents[1], contents[2], contents[3], contents[4]);
+        else
+            console.log(`Path command error ${command}\n${path.join('\n')}`);
+    }
+    path2d.closePath();
+    return path2d;
+}
+function saveContext(ctx, scale) {
+    return {
+        fillStyle: ctx.fillStyle,
+        strokeStyle: ctx.strokeStyle,
+        lineWidth: ctx.lineWidth / scale,
+        lineCap: ctx.lineCap,
+        lineJoin: ctx.lineJoin,
+        miterLimit: ctx.miterLimit / scale,
+        lineDash: ctx.getLineDash().map(v => v / scale),
+        lineDashOffset: ctx.lineDashOffset / scale,
+        shadow: {
+            blur: ctx.shadowBlur,
+            color: ctx.shadowColor,
+            offset: [ctx.shadowOffsetX, ctx.shadowOffsetY]
+        }
+    };
+}
+export default function applyCFF(ctx, text, resetCanvas = true, scale = 1) {
     if (ctx) {
         applyStyles(ctx, scale);
-        let inPath = false, inGroup = false;
-        let angleMode = "deg"; // While rad is more common, it can't be typed
-        const lines = text.split('\n');
+        let groups = [];
+        let angleMode = "deg"; // Degrees are nicer to type
+        const lines = text.split('\n').map(v => v.split('//')[0].trim());
         if (resetCanvas) {
             lines.unshift('reset'); // Ensure the canvas is cleared before processing
         }
         for (let i = 0; i < lines.length; i++) {
-            const content = lines[i].split('//')[0].trim(); // Get content, trim, and remove comments
+            const content = lines[i];
+            const commandText = content.split(' ').map(v => v.trim());
+            /** Word combonations treated as one command */
+            const doubles = [['dash', 'offset'], ['reset', 'transformations'], ['transform', 'relative'], ['font', 'caps'], ['font', 'kerning'], ['font', 'stretch']];
+            /** Commands that will combine with the next word */
+            const wordFilters = ['fill', 'stroke', 'line', 'begin', 'close', 'miter', 'round', 'clear', 'move', 'shadow', 'clip', 'text', 'multi'];
+            if (wordFilters.includes(commandText[0]) && commandText.length > 1 || doubles.includes([commandText[0], commandText[1]]))
+                commandText[0] = `${commandText.shift()} ${commandText[0]}`;
             // Skip lines, returns, etc.
             if (!content)
                 continue; // Skip empty lines
@@ -48,243 +118,96 @@ export default function applyCFF(canvas, text, resetCanvas = true, scale = 1) {
                     i = value;
             }
             // Groups and Paths
-            if (content.startsWith('group {')) {
-                inGroup = true; // Start of a group block
+            if (commandText[0] == 'group') {
+                groups.push(saveContext(ctx, scale)); // Start of a group block
                 ctx.save(); // Save the current state
                 ctx.beginPath(); // Start a new path
                 continue;
             }
-            if (content.startsWith('path {'))
-                inPath = true; // Start of a path block
-            if (inPath) {
-                if (content == '}') {
-                    inPath = false; // End of a path block
-                }
-                const parts = content
-                    .replace('skip', '')
-                    .replace('arc', '')
-                    .replace('bezier', '')
-                    .replace('quadratic', '')
-                    .replace('curve', '')
-                    .trim()
-                    .split(' ');
-                if (content.startsWith('skip') && parts.length === 2)
-                    ctx.moveTo(...parts.map((a) => parseFloat(a) * scale));
-                else if (parts.length === 2) {
-                    ctx.lineTo(...parts.map((a) => parseFloat(a) * scale));
-                }
-                else if (parts.length === 4) {
-                    ctx.quadraticCurveTo(...parts.map((a) => parseFloat(a) * scale));
-                }
-                else if (parts.length === 5) {
-                    ctx.arcTo(...parts.map((a) => parseFloat(a) * scale));
-                }
-                else if (parts.length === 6) {
-                    ctx.bezierCurveTo(...parts.map((a) => parseFloat(a) * scale));
-                }
+            if (commandText[0] == 'fill path') {
+                let index = lines.indexOf('}', i);
+                ctx.fill(pathMode(lines.slice(i + 1, index), scale));
+                i = index + 1;
                 continue;
             }
-            else if (content.startsWith('}') && inGroup) {
-                inGroup = false; // End group block
+            else if (commandText[0] == 'stroke path') {
+                let index = lines.indexOf('}', i);
+                ctx.stroke(pathMode(lines.slice(i + 1, index), scale));
+                i = index + 1;
+                continue;
+            }
+            else if (commandText[0] == 'multi path') {
+                let index = lines.indexOf('}', i);
+                let path = pathMode(lines.slice(i + 1, index), scale);
+                ctx.fill(path);
+                ctx.stroke(path);
+                i = index + 1;
+                continue;
+            }
+            else if (commandText[0] == 'clip path') {
+                let index = lines.indexOf('}', i);
+                ctx.clip(pathMode(lines.slice(i + 1, index - 1), scale));
+                i = index + 1;
+                continue;
+            }
+            else if (commandText[0] == '}') {
                 ctx.restore(); // Restore the previous state
+                applyStyles(ctx, scale, groups.pop());
                 ctx.beginPath(); // Start a new path
                 continue;
             }
-            if (content.startsWith('return'))
-                break; // Stop processing on 'return'
-            // Canvas Metadata Manipulation
-            else if (content.startsWith('height ') && canvasElementMode) {
-                const height = parseInt(content.replace('height', ''));
-                canvas.height = height * scale;
-            }
-            else if (content.startsWith('width ') && canvasElementMode) {
-                const width = parseInt(content.replace('width', ''));
-                canvas.width = width * scale;
-            }
-            // Canvas Style Manipulation
-            if (content.startsWith('fill style ')) {
-                ctx.fillStyle = content.replace('fill style', '').trim();
-            }
-            if (content.startsWith('stroke style ')) {
-                ctx.strokeStyle = content.replace('stroke style', '').trim();
-            }
-            if (content.startsWith('stroke width ')) {
-                ctx.lineWidth = parseFloat(content.replace('stroke width', '').trim()) * scale;
-            }
-            if (content.startsWith('line cap ')) {
-                ctx.lineCap = content.replace('line cap', '').trim();
-            }
-            else if (content.startsWith('line join ')) {
-                ctx.lineJoin = content.replace('line join', '').trim();
-            }
-            else if (content.startsWith('miter limit ')) {
-                ctx.miterLimit = parseFloat(content.replace('miter limit', '').trim()) * scale;
-            }
-            else if (content.startsWith('dash ')) {
-                ctx.setLineDash(content.replace('dash', '').trim().split(' ').map((v) => parseFloat(v) * 2));
-            }
-            else if (content.startsWith('dash offset ')) {
-                ctx.lineDashOffset = parseFloat(content.replace('dash offset', '').trim()) * scale;
-            }
-            // Handle paths, save, restore, etc.
-            if (content == 'begin path') {
-                ctx.beginPath();
-            }
-            else if (content == 'close path') {
-                ctx.closePath();
-            }
-            else if (content == 'save') {
-                ctx.save();
-            }
-            else if (content == 'restore') {
-                ctx.restore();
-            }
-            else if (content == 'reset' && ctx.reset) {
-                ctx.reset();
-                applyStyles(ctx, scale);
-            }
-            else if (content == 'reset' && !ctx.reset && canvasElementMode) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                applyStyles(ctx, scale);
-            }
-            // Transformations
-            if (content == 'reset transformations') {
-                ctx.resetTransform();
-            }
-            else if (content.startsWith('rotate')) {
-                const value = content.replace("rotate", "").trim();
-                const radians = toRadians(parseFloat(value), angleMode);
-                ctx.rotate(radians);
-            }
-            else if (content.startsWith("scale ")) {
-                const parts = content.replace("scale", "").trim().split(" ");
-                if (parts.length === 6) {
-                    ctx.scale(...parts.map((a) => parseFloat(a)));
-                }
-            }
-            else if (content.startsWith("transform ")) {
-                const parts = content.replace("transform", "").trim().split(" ");
-                if (parts.length === 6) {
-                    ctx.setTransform(...parts.map((a, i) => parseFloat(a) * (i > 3 ? scale : 1)));
-                }
-            }
-            else if (content.startsWith("transform relative ")) {
-                const parts = content.replace("transform relative", "").trim().split(" ");
-                if (parts.length === 6) {
-                    ctx.transform(...parts.map((a, i) => parseFloat(a) * (i > 3 ? scale : 1)));
-                }
-            }
+            if (commandText[0] == 'return')
+                break;
             // Angle Modes
             if (content == 'use radians' || content == 'use rad') {
                 angleMode = 'rad';
+                continue;
             }
             else if (content == 'use degrees' || content == 'use deg') {
                 angleMode = 'deg';
+                continue;
             }
             else if (content == 'use turns' || content == 'use turn') {
                 angleMode = 'turn';
+                continue;
             }
-            // Rectangles
-            if (content.startsWith('rect ')) {
-                const parts = content.replace('rect', '').trim().split(' ');
-                if (parts.length === 4) {
-                    ctx.rect(...parts.map((a) => parseFloat(a) * scale));
+            const command = commands[commandText[0]];
+            if (command) {
+                if (command.avaliblty == 'basic' || command.avaliblty == 'applyStyles') {
+                    // Valid Command for enviroment
+                    let args = [];
+                    commandText.slice(1).forEach((arg, i, arr) => {
+                        if (command.args[i] == 'text') {
+                            args.push(arg);
+                        }
+                        else if (command.args[i] == 'number') {
+                            args.push(parseFloat(arg));
+                        }
+                        else if (command.args[i] == 'boolean') {
+                            args.push(arg == 'true');
+                        }
+                        else if (command.args[i] == 'point') {
+                            args.push(parseFloat(arg) * scale);
+                        }
+                        else if (command.args[i] == 'angle') {
+                            let angle = arg.includes('PI') ? parseInt(arg.replace('PI', '')) * Math.PI : parseFloat(arg);
+                            args.push(toRadians(angle, angleMode));
+                        }
+                        else if (command.args[i] == 'pointArray') {
+                            args.push(arr.slice(i).map((a) => parseFloat(a) * scale));
+                        }
+                        else if (command.args[i] == 'textArray') {
+                            args.push(arr.slice(i));
+                        }
+                    });
+                    command.handler(ctx, args);
+                    if (command.avaliblty == 'applyStyles')
+                        applyStyles(ctx, scale);
                 }
             }
-            else if (content.startsWith('round rect ')) {
-                const parts = content.replace('round rect', '').trim().split(' ');
-                if (parts.length === 5) {
-                    ctx.roundRect(...parts.map((a) => parseFloat(a) * scale));
-                }
+            else {
+                console.error(`Command ${commandText[0]} in line ${i} not found "${content}"`);
             }
-            else if (content.startsWith('stroke rect ')) {
-                const parts = content.replace('stroke rect', '').trim().split(' ');
-                if (parts.length === 4) {
-                    ctx.strokeRect(...parts.map((a) => parseFloat(a) * scale));
-                }
-            }
-            else if (content.startsWith('fill rect ')) {
-                const parts = content.replace('fill rect', '').trim().split(' ');
-                if (parts.length === 4) {
-                    ctx.fillRect(...parts.map((a) => parseFloat(a) * scale));
-                }
-            }
-            // Ellipses
-            if (content.startsWith('arc ')) {
-                const parts = content.replace('arc', '').trim().split(' ');
-                if (parts.length === 5 || parts.length === 6) {
-                    ctx.arc(parseFloat(parts[0]) * scale, parseFloat(parts[1]) * scale, parseFloat(parts[2]) * scale, toRadians(parseFloat(parts[3]), angleMode), toRadians(parseFloat(parts[4]), angleMode), parts.length === 6 ? parts[5] === "true" : false);
-                }
-            }
-            else if (content.startsWith('ellipse ')) {
-                const parts = content.replace('ellipse', '').trim().split(' ');
-                if (parts.length === 7 || parts.length === 8) {
-                    ctx.ellipse(parseFloat(parts[0]) * scale, parseFloat(parts[1]) * scale, parseFloat(parts[2]) * scale, parseFloat(parts[3]) * scale, toRadians(parseFloat(parts[4]), angleMode), toRadians(parseFloat(parts[5]), angleMode), toRadians(parseFloat(parts[6]), angleMode), parts.length === 8 ? parts[7] === "true" : false);
-                }
-                if (parts.length === 4) {
-                    ctx.ellipse(parseFloat(parts[0]) * scale, parseFloat(parts[1]) * scale, parseFloat(parts[2]) * scale, parseFloat(parts[3]) * scale, 0, 0, Math.PI * 2);
-                }
-            }
-            else if (content.startsWith('circle ')) {
-                const parts = content.replace('circle', '').trim().split(' ').map(Number);
-                if (parts.length === 3) {
-                    ctx.arc(parts[0] * scale, parts[1] * scale, parts[2] * scale, 0, Math.PI * 2);
-                }
-            }
-            // Lines
-            if (content.startsWith('curve to ') ||
-                content.startsWith('bezier to ') ||
-                content.startsWith('quadratic to ')) {
-                const parts = content
-                    .replace('curve to', '')
-                    .replace('bezier to', '')
-                    .replace('quadratic to', '')
-                    .trim()
-                    .split(' ');
-                if (parts.length == 4)
-                    ctx.quadraticCurveTo(...parts.map((a) => parseFloat(a) * scale));
-                if (parts.length == 6)
-                    ctx.bezierCurveTo(...parts.map((a) => parseFloat(a) * scale));
-            }
-            else if (content.startsWith('line to ')) {
-                const parts = content.replace('line to', '').trim().split(' ');
-                if (parts.length == 2)
-                    ctx.lineTo(...parts.map((a) => parseFloat(a) * scale));
-            }
-            else if (content.startsWith('move to ')) {
-                const parts = content.replace('move to', '').trim().split(' ');
-                if (parts.length == 2)
-                    ctx.moveTo(...parts.map((a) => parseFloat(a) * scale));
-            }
-            else if (content.startsWith('arc to ')) {
-                const parts = content.replace('arc to', '').trim().split(' ');
-                if (parts.length == 5)
-                    ctx.arcTo(...parts.map((a) => parseFloat(a) * scale));
-            }
-            // Drawing Functions
-            if (content == 'fill') {
-                ctx.fill();
-            }
-            else if (content == 'stroke') {
-                ctx.stroke();
-            }
-            else if (content.startsWith('clear rect ')) {
-                const parts = content.replace('clear rect', '').trim().split(' ');
-                if (parts.length === 4) {
-                    ctx.clearRect(...parts.map((a) => parseFloat(a) * scale));
-                }
-            }
-            else if (content == 'clear' && canvasElementMode) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-            /*
-                To add:
-                - Text
-                - Gradients (and patterns?)
-                - Clipping paths?
-                - Shadows
-                - Proper support for save and restore when using groups
-            */
         }
     }
 }
