@@ -1,4 +1,3 @@
-// import { Path2D } from "path2d"; // <-- Path2D Polyfill for testing
 import commands from "./commands.js";
 type angleMode = 'rad' | 'deg' | 'turn';
 type style = {
@@ -60,8 +59,7 @@ function toRadians(value: number, mode: angleMode): number {
 	else return value
 }
 type canvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-function pathMode(path: string[], scale: number): any {
-
+function pathMode(path: string[], scale: number): Path2D {
 	let path2d = new Path2D();
 	for (let i = 0; i < path.length; i++) {
 		const content = path[i].split('//')[0].trim(); // Get content, trim, and remove comments
@@ -104,10 +102,17 @@ function saveContext(ctx: canvasContext, scale: number): style {
 		}
 	}
 }
+/**
+ * Apply a canvas file to a canvas context
+ * @param ctx The canvas context to apply the file to
+ * @param file The file to apply
+ * @param resetCanvas Whether to reset the canvas before applying the file
+ * @param scale The scale to apply to the file
+ */
 export default function applyCFF(
 	ctx: canvasContext,
-	text: string,
-	resetCanvas: boolean = true,
+	file: string,
+	resetCanvas: boolean = false,
 	scale: number = 1
 ) {
 	if (ctx) {
@@ -118,7 +123,7 @@ export default function applyCFF(
 
 		let groups: style[] = [];
 		let angleMode: angleMode = "deg"; // Degrees are nicer to type
-		const lines = text.split('\n').map(v => v.split('//')[0].trim());
+		const lines = file.split('\n').map(v => v.split('//')[0].trim());
 		if (resetCanvas) {
 			lines.unshift('reset'); // Ensure the canvas is cleared before processing
 		}

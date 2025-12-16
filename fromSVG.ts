@@ -76,7 +76,6 @@ function convertElement(
 ): Line[] {
   const tag = el.tagName.toLowerCase();
   const out: Line[] = [];
-
   // 1) Transformations
   const transform = el.getAttribute("transform");
   if (transform) {

@@ -1,4 +1,3 @@
-// import { Path2D } from "path2d"; // <-- Path2D Polyfill for testing
 import commands from "./commands.js";
 const baseStyle = {
     fillStyle: "black",
@@ -66,12 +65,13 @@ function pathMode(path, scale) {
             path2d.ellipse(contents[0], contents[1], contents[2], contents[3], contents[4], contents[5], contents[6], commandText[8] == 'true');
         else if (command == 'rect')
             path2d.rect(contents[0], contents[1], contents[2], contents[3]);
-        else if (command == 'roundRect')
-            path2d.roundRect(contents[0], contents[1], contents[2], contents[3], contents[4]);
+        else if (command == 'round' && commandText[1] == 'rect')
+            path2d.roundRect(contents[1], contents[2], contents[3], contents[4], contents[5]);
+        else if (command == 'close')
+            path2d.closePath();
         else
             console.log(`Path command error ${command}\n${path.join('\n')}`);
     }
-    path2d.closePath();
     return path2d;
 }
 function saveContext(ctx, scale) {
@@ -91,12 +91,19 @@ function saveContext(ctx, scale) {
         }
     };
 }
-export default function applyCFF(ctx, text, resetCanvas = true, scale = 1) {
+/**
+ * Apply a canvas file to a canvas context
+ * @param ctx The canvas context to apply the file to
+ * @param file The file to apply
+ * @param resetCanvas Whether to reset the canvas before applying the file
+ * @param scale The scale to apply to the file
+ */
+export default function applyCFF(ctx, file, resetCanvas = false, scale = 1) {
     if (ctx) {
         applyStyles(ctx, scale);
         let groups = [];
         let angleMode = "deg"; // Degrees are nicer to type
-        const lines = text.split('\n').map(v => v.split('//')[0].trim());
+        const lines = file.split('\n').map(v => v.split('//')[0].trim());
         if (resetCanvas) {
             lines.unshift('reset'); // Ensure the canvas is cleared before processing
         }

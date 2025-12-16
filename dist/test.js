@@ -1,13 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
-import { createCanvas } from "canvas";
+import { createCanvas, CanvasRenderingContext2D } from "canvas";
 import fromSVG from "./fromSVG.js";
 import applyCFF from "./applyCFF.js";
 import { JSDOM } from "jsdom";
-import { CanvasRenderingContext2D as cr2d } from "canvas";
-import { applyPath2DToCanvasRenderingContext } from "path2d";
-applyPath2DToCanvasRenderingContext(cr2d);
+import { Path2D, applyPath2DToCanvasRenderingContext } from "path2d";
 async function processDirectory(inputDir, outputDir) {
+    globalThis.Path2D = Path2D;
+    // globalThis.CanvasRenderingContext2D = CanvasRenderingContext2D as any;
+    applyPath2DToCanvasRenderingContext(CanvasRenderingContext2D);
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
     // Read all file names

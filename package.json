@@ -15,11 +15,11 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.0.14",
     "canvas": "^3.1.2",
     "jsdom": "^26.1.0",
-    "path2d": "^0.3.1"
+    "path2d": "^0.3.1",
+    "typescript": "^5.9.3"
   }
 }
