@@ -80,10 +80,10 @@ function pathMode(path: string[], scale: number): any {
 		else if (command == 'arcTo') path2d.arcTo(contents[0], contents[1], contents[2], contents[3], contents[4]);
 		else if (command == 'ellipse') path2d.ellipse(contents[0], contents[1], contents[2], contents[3], contents[4], contents[5], contents[6], commandText[8] == 'true');
 		else if (command == 'rect') path2d.rect(contents[0], contents[1], contents[2], contents[3]);
-		else if (command == 'roundRect') path2d.roundRect(contents[0], contents[1], contents[2], contents[3], contents[4]);
+		else if (command == 'round' && commandText[1] == 'rect') path2d.roundRect(contents[1], contents[2], contents[3], contents[4], contents[5]);
+		else if (command == 'close') path2d.closePath();
 		else console.log(`Path command error ${command}\n${path.join('\n')}`)
 	}
-	path2d.closePath();
 	return path2d;
 }
 
