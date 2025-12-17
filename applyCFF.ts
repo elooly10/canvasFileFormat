@@ -106,13 +106,11 @@ function saveContext(ctx: canvasContext, scale: number): style {
  * Apply a canvas file to a canvas context
  * @param ctx The canvas context to apply the file to
  * @param file The file to apply
- * @param resetCanvas Whether to reset the canvas before applying the file
  * @param scale The scale to apply to the file
  */
 export default function applyCFF(
 	ctx: canvasContext,
 	file: string,
-	resetCanvas: boolean = false,
 	scale: number = 1
 ) {
 	if (ctx) {
@@ -124,9 +122,6 @@ export default function applyCFF(
 		let groups: style[] = [];
 		let angleMode: angleMode = "deg"; // Degrees are nicer to type
 		const lines = file.split('\n').map(v => v.split('//')[0].trim());
-		if (resetCanvas) {
-			lines.unshift('reset'); // Ensure the canvas is cleared before processing
-		}
 		for (let i = 0; i < lines.length; i++) {
 			const content = lines[i];
 			const commandText = content.split(' ').map(v => v.trim());
@@ -209,7 +204,7 @@ export default function applyCFF(
 						} else if (command.args[i] == 'point') {
 							args.push(parseFloat(arg) * scale);
 						} else if (command.args[i] == 'angle') {
-							let angle = arg.includes('PI') ? parseInt(arg.replace('PI', '')) * Math.PI : parseFloat(arg);
+							let angle = arg == 'PI' ? Math.PI : arg.includes('PI') ? parseInt(arg.replace('PI', '')) * Math.PI : parseFloat(arg);
 							args.push(toRadians(angle, angleMode));
 						} else if (command.args[i] == 'pointArray') {
 							args.push(arr.slice(i).map((a) => parseFloat(a) * scale));

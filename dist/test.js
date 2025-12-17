@@ -43,7 +43,7 @@ async function processDirectory(inputDir, outputDir) {
             const ctx = canvas.getContext("2d");
             ctx.reset = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
             // Use canvas
-            applyCFF(ctx, content, false, 2);
+            applyCFF(ctx, content, 2);
             // Convert canvas to PNG buffer
             const buffer = canvas.toBuffer("image/png");
             // Write out image as <filename>.png

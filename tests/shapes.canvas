@@ -35,8 +35,9 @@ stroke
 begin path
 stroke style purple
 // Draw some arcs
-use turns
-arc 100 100 50 0 .5
-arc 200 100 50 0 .5 true
+use rad
+arc 100 100 50 0 PI
+arc 200 100 50 0 1PI true
+close path
 fill
 stroke
