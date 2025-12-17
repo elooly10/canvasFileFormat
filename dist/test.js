@@ -7,7 +7,6 @@ import { JSDOM } from "jsdom";
 import { Path2D, applyPath2DToCanvasRenderingContext } from "path2d";
 async function processDirectory(inputDir, outputDir) {
     globalThis.Path2D = Path2D;
-    // globalThis.CanvasRenderingContext2D = CanvasRenderingContext2D as any;
     applyPath2DToCanvasRenderingContext(CanvasRenderingContext2D);
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
@@ -43,6 +42,7 @@ async function processDirectory(inputDir, outputDir) {
             const canvas = createCanvas(1000, 1000);
             const ctx = canvas.getContext("2d");
             ctx.reset = () => ctx.rect(0, 0, canvas.width, canvas.height);
+            ctx.canvas = canvas;
             // Use canvas
             applyCFF(ctx, content, false, 2);
             // Convert canvas to PNG buffer

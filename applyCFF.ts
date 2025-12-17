@@ -67,7 +67,7 @@ function pathMode(path: string[], scale: number): Path2D {
 		let command = commandText[0];
 		const contents = commandText.slice(1).map((v) => parseFloat(v) * scale);
 		if (!isNaN(parseFloat(command))) {
-			contents.unshift(parseFloat(command));
+			contents.unshift(parseFloat(command) * scale);
 			command = 'line';
 		}
 		if (command == 'skip' || command == 'move') path2d.moveTo(contents[0], contents[1]);

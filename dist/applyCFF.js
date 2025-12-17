@@ -46,7 +46,7 @@ function pathMode(path, scale) {
         let command = commandText[0];
         const contents = commandText.slice(1).map((v) => parseFloat(v) * scale);
         if (!isNaN(parseFloat(command))) {
-            contents.unshift(parseFloat(command));
+            contents.unshift(parseFloat(command) * scale);
             command = 'line';
         }
         if (command == 'skip' || command == 'move')
