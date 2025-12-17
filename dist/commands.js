@@ -156,13 +156,6 @@ export default createCommands({
             ctx.transform(...args);
         }
     },
-    'transform relative': {
-        args: ['number', 'number', 'number', 'point', 'point', 'point'],
-        avaliblty: 'basic',
-        handler: (ctx, args) => {
-            ctx.transform(...args);
-        }
-    },
     'rect': {
         args: ['point', 'point', 'point', 'point'],
         avaliblty: 'basic',

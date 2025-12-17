@@ -107,7 +107,7 @@ export default function applyCFF(ctx, file, scale = 1) {
             const content = lines[i];
             const commandText = content.split(' ').map(v => v.trim());
             /** Word combonations treated as one command */
-            const doubles = [['dash', 'offset'], ['reset', 'transformations'], ['transform', 'relative'], ['font', 'caps'], ['font', 'kerning'], ['font', 'stretch']];
+            const doubles = [['dash', 'offset'], ['reset', 'transformations'], ['font', 'caps'], ['font', 'kerning'], ['font', 'stretch']];
             /** Commands that will combine with the next word */
             const wordFilters = ['fill', 'stroke', 'line', 'begin', 'close', 'miter', 'round', 'clear', 'move', 'shadow', 'clip', 'text', 'multi'];
             if (wordFilters.includes(commandText[0]) && commandText.length > 1 || doubles.includes([commandText[0], commandText[1]]))

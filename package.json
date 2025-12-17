@@ -1,6 +1,6 @@
 {
-  "name": "canvasfileformat",
-  "version": "0.0.4",
+  "name": "canvasff",
+  "version": "0.1.0",
   "description": "File format for creating JS canvases",
   "keywords": [
     "canvas",
@@ -12,7 +12,8 @@
   "type": "module",
   "scripts": {
     "test": "tsc && node dist/test.js",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

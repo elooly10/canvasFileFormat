@@ -38,7 +38,6 @@ declare const _default: {
     readonly rotate: command<readonly ["angle"]>;
     readonly scale: command<readonly ["point", "point"]>;
     readonly transform: command<readonly ["point", "point", "point", "point", "point", "point"]>;
-    readonly 'transform relative': command<readonly ["number", "number", "number", "point", "point", "point"]>;
     readonly rect: command<readonly ["point", "point", "point", "point"]>;
     readonly 'round rect': command<readonly ["point", "point", "point", "point", "point"]>;
     readonly 'stroke rect': command<readonly ["point", "point", "point", "point"]>;

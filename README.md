@@ -87,7 +87,6 @@ See MDN for more details on how the canvas uses these commands, most of them dir
 | `rotate` | `angle` | Rotates the canvas context. |
 | `scale` | `point`, `point` | Scales the canvas units by x and y. |
 | `transform` | `point`, `point`, `point`, `point`, `point`, `point` | Multiplies the current transformation matrix. |
-| `transform relative` | `number`, `number`, `number`, `point`, `point`, `point` | Multiplies the current transformation matrix. |
 | `fill linear` | `point`, `point`, `point`, `point`, `textArray` | Sets a linear gradient for filling. Each item in the textArray is a color stop spaced evenly (2 items -> stops at 0% and 100%, 3 items -> stops at 0%, 50%, and 100%) |
 | `stroke linear` | `point`, `point`, `point`, `point`, `textArray` | Sets a linear gradient for stroking. Each item in the textArray is a color stop spaced evenly (2 items -> stops at 0% and 100%, 3 items -> stops at 0%, 50%, and 100%) |
 | `fill radial` | `point`, `point`, `point`, `textArray` | Sets a radial gradient for filling. Each item in the textArray is a color stop spaced evenly (2 items -> stops at 0% and 100%, 3 items -> stops at 0%, 50%, and 100%) |
