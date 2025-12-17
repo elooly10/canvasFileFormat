@@ -134,13 +134,13 @@ export default function applyCFF(ctx, file, resetCanvas = false, scale = 1) {
             if (commandText[0] == 'fill path') {
                 let index = lines.indexOf('}', i);
                 ctx.fill(pathMode(lines.slice(i + 1, index), scale));
-                i = index + 1;
+                i = index;
                 continue;
             }
             else if (commandText[0] == 'stroke path') {
                 let index = lines.indexOf('}', i);
                 ctx.stroke(pathMode(lines.slice(i + 1, index), scale));
-                i = index + 1;
+                i = index;
                 continue;
             }
             else if (commandText[0] == 'multi path') {
@@ -148,13 +148,13 @@ export default function applyCFF(ctx, file, resetCanvas = false, scale = 1) {
                 let path = pathMode(lines.slice(i + 1, index), scale);
                 ctx.fill(path);
                 ctx.stroke(path);
-                i = index + 1;
+                i = index;
                 continue;
             }
             else if (commandText[0] == 'clip path') {
                 let index = lines.indexOf('}', i);
                 ctx.clip(pathMode(lines.slice(i + 1, index - 1), scale));
-                i = index + 1;
+                i = index;
                 continue;
             }
             else if (commandText[0] == '}') {

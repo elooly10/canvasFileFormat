@@ -1,6 +1,6 @@
 {
   "name": "canvasfileformat",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "File format for creating JS canvases",
   "keywords": [
     "canvas",

@@ -10,6 +10,10 @@ group {
         skip 20 20
         200 20
     }
+    stroke path {
+        skip 100 100
+        0 0
+    }
     stroke style blue
     rect 300 300 300 300
     stroke

@@ -1,13 +1,13 @@
 import fs from "fs/promises";
 import path from "path";
-import { createCanvas, CanvasRenderingContext2D } from "canvas";
+import { createCanvas, CanvasRenderingContext2D as cr2D } from "canvas";
 import fromSVG from "./fromSVG.js";
 import applyCFF from "./applyCFF.js";
 import { JSDOM } from "jsdom";
 import { Path2D, applyPath2DToCanvasRenderingContext } from "path2d";
 async function processDirectory(inputDir, outputDir) {
     globalThis.Path2D = Path2D;
-    applyPath2DToCanvasRenderingContext(CanvasRenderingContext2D);
+    applyPath2DToCanvasRenderingContext(cr2D);
     // Ensure output directory exists
     await fs.mkdir(outputDir, { recursive: true });
     // Read all file names
@@ -41,8 +41,7 @@ async function processDirectory(inputDir, outputDir) {
             // Create a new Canvas
             const canvas = createCanvas(1000, 1000);
             const ctx = canvas.getContext("2d");
-            ctx.reset = () => ctx.rect(0, 0, canvas.width, canvas.height);
-            ctx.canvas = canvas;
+            ctx.reset = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
             // Use canvas
             applyCFF(ctx, content, false, 2);
             // Convert canvas to PNG buffer
